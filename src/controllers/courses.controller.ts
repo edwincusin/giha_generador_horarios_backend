@@ -1,4 +1,4 @@
-import { type Request, type Response, type NextFunction, response } from "express";
+import { type Request, type Response } from "express";
 import prisma from "../database/prisma.js";
 
 //POINT GET DE TODAS LAS MATERIAS
@@ -105,7 +105,7 @@ export const updateCourse = async (req: Request, res: Response) => {
             }
         })
 
-        res.status(200).json({mensaje:"Modificacion realizada con Exito."});
+        res.status(200).json({ mensaje: "Modificacion realizada con Exito." });
     } catch (error) {
         console.error(error);
         res
@@ -129,11 +129,17 @@ export const deleteCourse = async (req: Request, res: Response) => {
         }
 
         await prisma.courses.delete({
-            where:{id:Number(id)}
+            where: { id: Number(id) }
         })
 
-        res.status(200).json({mensaje:"Materia eliminada con exito"});
-    } catch (error) {
+        res.status(200).json({ mensaje: "Materia eliminada con exito" });
+    } catch (error:any) {
+        if (error.code === "P2003") {
+            return res.status(409).json({
+                mensaje: "No se puede eliminar porque tiene registros asociados"
+            });
+        }
+
         console.error(error);
         res
             .status(500)
