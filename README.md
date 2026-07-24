@@ -1,119 +1,156 @@
+# GIHA — Generador Inteligente de Horarios Académicos
 
-############################
-# INICIAR EL PROYECTO
-############################
+Backend del sistema GIHA, desarrollado con **Node.js + TypeScript + Express + Prisma + PostgreSQL**, aplicando conceptos de matemáticas discretas (teoría de conjuntos, álgebra proposicional y combinatoria).
 
+---
+
+## 🚀 Guía de instalación
+
+### 1. Iniciar el proyecto
+
+```bash
 npm init -y
+```
 
-############################
-# DEPENDENCIAS PRINCIPALES
-############################
+### 2. Instalar dependencias principales
 
+```bash
 # Framework web
 npm install express
 
 # Permitir CORS
 npm install cors
 
-# Encriptar claves
-npm install bcrypt
-
-# Manejar tokens
-npm install jsonwebtoken
-
-# Subir archivos
-npm install multer
-
 # PostgreSQL driver
 npm install pg
 
-# Prisma PostgreSQL
-npm install @prisma/adapter-pg
+# Cliente de Prisma
+npm install @prisma/client
+```
 
+### 3. Instalar dependencias de desarrollo
 
-
-
-############################
-# DEPENDENCIAS DESARROLLO
-############################
-definiciones de tipos para TypeScript.
-###########################
-
+```bash
 # TypeScript
 npm install -D typescript
 
-//# Ejecutar TS
-//npm install -D ts-node
-
-# Ejecutar TS (reemplaza a ts-node, compatible con Node moderno)
+# Ejecutar TS directamente (reemplaza a ts-node, compatible con Node moderno)
 npm install -D tsx
 
-# Tipos Express
+# Definiciones de tipos para TypeScript
 npm install -D @types/express
-
-# Tipos CORS
 npm install -D @types/cors
-
-# Tipos Bcrypt
-npm install -D @types/bcrypt
-
-# Tipos JWT
-npm install -D @types/jsonwebtoken
-
-# Tipos Multer
-npm install -D @types/multer
-
-# Tipos PG
 npm install -D @types/pg
 
-# Reinicio automático
+# Reinicio automático al guardar cambios
 npm install -D nodemon
 
 # ORM Prisma
 npm install -D prisma
+```
 
-al final
-npm install @prisma/client
+### 4. Inicializar TypeScript
 
-############################
-# INICIALIZAR TYPESCRIPT
-############################
-
-# Crear tsconfig
+```bash
 npx tsc --init
+```
 
+### 5. Inicializar Prisma
 
-############################
-# INICIALIZAR PRISMA
-############################
-
-# Crear Prisma
+```bash
 npx prisma init
+```
 
-# realizan instrospeccion i ya tienes creado tablas en la bdd
+Esto crea la carpeta `prisma/` con `schema.prisma`, y un archivo `.env` con la variable `DATABASE_URL`.
+
+### 6. Configurar la conexión a la base de datos
+
+Edita `.env`:
+
+```
+DATABASE_URL="postgresql://postgres:tu_password@localhost:5432/giha_generador_horarios?schema=public"
+```
+
+### 7. Traer las tablas ya existentes (introspección)
+
+Como la base de datos **ya fue creada manualmente** con el script SQL (`courses`, `prerequisites`, `schedule_configurations`, etc.), usamos introspección para que Prisma "lea" esa estructura y arme `schema.prisma` automáticamente:
+
+```bash
 npx prisma db pull
+```
 
+> ⚠️ No es necesario correr `prisma migrate dev` después de esto — las tablas ya existen. Ver la nota al final del documento.
 
-############################
-# GENERAR CLIENTE PRISMA
-############################
+### 8. Generar el cliente de Prisma
 
-# Generar cliente
+```bash
 npx prisma generate
+```
 
+Esto genera las funciones tipadas (`prisma.course.findMany()`, `prisma.course.create()`, etc.) que se usan en los controladores.
 
-############################
-# CREAR MIGRACION
-############################
+---
 
-# Primera migración
-npx prisma migrate dev --name init 
+## ▶️ Correr el proyecto
 
+```bash
+npm run dev
+```
 
-"scripts": {
-    "dev": "nodemon --exec node --env-file=.env --loader ts-node/esm src/index.ts"
+Deberías ver:
 
-o
+```
+Servidor GIHA corriendo en http://localhost:3000
+```
 
-"dev": "nodemon --exec \"node --env-file=.env --import tsx\" src/index.ts"
-  }, "type": "module",
+---
+
+## 📄 Scripts disponibles (`package.json`)
+
+```json
+{
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --exec \"node --env-file=.env --import tsx\" src/index.ts"
+  }
+}
+```
+
+- **`type: module`** → el proyecto usa ESM (`import`/`export`), no CommonJS.
+- **`--env-file=.env`** → carga las variables de entorno de forma nativa (no se necesita el paquete `dotenv`).
+- **`--import tsx`** → permite ejecutar archivos `.ts` directamente, sin compilarlos antes.
+- **`nodemon`** → reinicia el servidor automáticamente cada vez que guardas un cambio.
+
+---
+
+## 🗂️ Estructura del proyecto
+
+```
+giha-backend/
+├── prisma/
+│   └── schema.prisma       # modelo de datos (generado por introspección)
+├── src/
+│   ├── controllers/        # lógica de cada endpoint
+│   ├── routes/              # definición de rutas
+│   ├── utils/                # funciones auxiliares (ej: conversión de horas)
+│   ├── db.ts                 # cliente de Prisma
+│   └── index.ts              # punto de entrada del servidor
+├── .env                     # variables de entorno (NO subir a git)
+├── .gitignore
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## 📌 Nota: introspección vs. migraciones
+
+Este proyecto usa **introspección** (`prisma db pull`) porque la base de datos ya existía antes de usar Prisma.
+
+Si en el futuro quieres agregar una tabla o columna **nueva** y que Prisma la cree por ti, ahí sí usarías migraciones:
+
+```bash
+npx prisma migrate dev --name nombre_del_cambio
+```
+
+Pero no mezcles ambos flujos sobre las mismas tablas — o Prisma intentará crear algo que ya existe y va a fallar.
