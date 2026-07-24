@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model configuration_completed_courses {
+  configuration_id        Int
+  course_id               Int
+  schedule_configurations schedule_configurations @relation(fields: [configuration_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  courses                 courses                 @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([configuration_id, course_id])
+}
+
+model configuration_required_courses {
+  configuration_id        Int
+  course_id               Int
+  schedule_configurations schedule_configurations @relation(fields: [configuration_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  courses                 courses                 @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([configuration_id, course_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model courses {
+  id                                                          Int                               @id @default(autoincrement())
+  name                                                        String                            @db.VarChar(100)
+  day                                                         String                            @db.VarChar(20)
+  start_time                                                  DateTime                          @db.Time(6)
+  end_time                                                    DateTime                          @db.Time(6)
+  modality                                                    String                            @db.VarChar(20)
+  difficulty                                                  String                            @db.VarChar(20)
+  credits                                                     Int
+  configuration_completed_courses                             configuration_completed_courses[]
+  configuration_required_courses                              configuration_required_courses[]
+  prerequisites_prerequisites_course_idTocourses              prerequisites[]                   @relation("prerequisites_course_idTocourses")
+  prerequisites_prerequisites_prerequisite_course_idTocourses prerequisites[]                   @relation("prerequisites_prerequisite_course_idTocourses")
+  schedule_courses                                            schedule_courses[]
+}
+
+model discard_reasons {
+  id                  Int                 @id @default(autoincrement())
+  schedule_id         Int
+  reason              String
+  generated_schedules generated_schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model generated_schedules {
+  id                      Int                     @id @default(autoincrement())
+  configuration_id        Int
+  total_credits           Int
+  valid                   Boolean
+  discard_reasons         discard_reasons[]
+  schedule_configurations schedule_configurations @relation(fields: [configuration_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  schedule_courses        schedule_courses[]
+}
+
+model prerequisites {
+  course_id                                             Int
+  prerequisite_course_id                                Int
+  courses_prerequisites_course_idTocourses              courses @relation("prerequisites_course_idTocourses", fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  courses_prerequisites_prerequisite_course_idTocourses courses @relation("prerequisites_prerequisite_course_idTocourses", fields: [prerequisite_course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([course_id, prerequisite_course_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model schedule_configurations {
+  id                              Int                               @id @default(autoincrement())
+  number_of_courses               Int
+  maximum_credits                 Int
+  maximum_difficult_courses       Int
+  required_modality               String                            @db.VarChar(20)
+  avoid_time_conflicts            Boolean?                          @default(true)
+  validate_prerequisites          Boolean?                          @default(true)
+  configuration_completed_courses configuration_completed_courses[]
+  configuration_required_courses  configuration_required_courses[]
+  generated_schedules             generated_schedules[]
+}
+
+model schedule_courses {
+  schedule_id         Int
+  course_id           Int
+  courses             courses             @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  generated_schedules generated_schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([schedule_id, course_id])
+}
