@@ -110,6 +110,33 @@ export const updateCourse = async (req: Request, res: Response) => {
         console.error(error);
         res
             .status(500)
-            .json({ error: " Error al ejecutar endpoint updateCourseById" });
+            .json({ error: " Error al ejecutar endpoint updateCourse" });
+    }
+};
+
+
+//POINT DELETE DE UNA MATERIA POR ID
+export const deleteCourse = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const course = await prisma.courses.findUnique({
+            where: { id: Number(id) },
+        });
+
+        if (!course) {
+            return res.status(404).json({ mensaje: "Materia no existe" });
+        }
+
+        await prisma.courses.delete({
+            where:{id:Number(id)}
+        })
+
+        res.status(200).json({mensaje:"Materia eliminada con exito"});
+    } catch (error) {
+        console.error(error);
+        res
+            .status(500)
+            .json({ error: " Error al ejecutar endpoint deleteCourse" });
     }
 };
