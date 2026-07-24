@@ -55,22 +55,61 @@ export const createCourse = async (req: Request, res: Response) => {
             return res.status(400).json({ mensaje: "Todos los campos son obligatorios" });
         }
 
-        const newCourse=await prisma.courses.create({
-            data:{
+        const newCourse = await prisma.courses.create({
+            data: {
                 name,
                 day,
-                start_time:new Date(`1970-01-01T${ start_time }:00.000Z`),
-                end_time:new Date(`1970-01-01T${ end_time }:00.000Z`),
+                start_time: new Date(`1970-01-01T${start_time}:00.000Z`),
+                end_time: new Date(`1970-01-01T${end_time}:00.000Z`),
                 modality,
                 difficulty,
-                credits:Number(credits)
+                credits: Number(credits)
             }
         });
 
-        res.status(201).json({mensaje:"Materia creada con exito."})
+        res.status(201).json({ mensaje: "Materia creada con exito." })
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: " Error al ejecutar endpoint createCourse" });
     }
 }
 
+//POINT PUT : MODIFICAR  MATERIA POR ID
+export const updateCourse = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { name, day, start_time, end_time, modality, difficulty, credits } = req.body
+
+        if (!name || !day || !start_time || !end_time || !modality || !difficulty || !credits) {
+            return res.status(400).json({ mensaje: "Todos los campos son obligatorios no deben quedar vacios" });
+        }
+
+        const course = await prisma.courses.findUnique({
+            where: { id: Number(id) },
+        });
+
+        if (!course) {
+            return res.status(404).json({ mensaje: "Materia no existe" });
+        }
+
+        await prisma.courses.update({
+            where: { id: Number(id) },
+            data: {
+                name,
+                day,
+                start_time: new Date(`1970-01-01T${start_time}:00.000Z`),
+                end_time: new Date(`1970-01-01T${end_time}:00.000Z`),
+                modality,
+                difficulty,
+                credits: Number(credits)
+            }
+        })
+
+        res.status(200).json({mensaje:"Modificacion realizada con Exito."});
+    } catch (error) {
+        console.error(error);
+        res
+            .status(500)
+            .json({ error: " Error al ejecutar endpoint updateCourseById" });
+    }
+};
