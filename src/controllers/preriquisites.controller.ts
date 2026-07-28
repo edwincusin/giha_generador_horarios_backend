@@ -24,13 +24,27 @@ export const getPrerequisitesbyCourse = async (req: Request, res: Response) => {
     try {
         const { course_id } = req.params
 
-        const prerequisite = await prisma.prerequisites.findMany(
+        if (isNaN(Number(course_id))) {
+            return res.status(400).json({error: "ID de materia inválido"
+            });
+        }
+
+        const course = await prisma.courses.findUnique(
             {
-                where: { course_id: Number(course_id) }
+                where: { id: Number(course_id) }
             }
         )
+        if (!course) {
+            return res.status(404).json({error: "La materia no existe"});
+        }
 
-        res.status(200).json(prerequisite);
+        const prerequisites = await prisma.prerequisites.findMany({
+                where: {
+                    course_id: Number(course_id)
+                }
+            });
+
+        res.status(200).json(prerequisites);
 
     } catch (error) {
         console.error("Error al recuperar getPrerequisitesbyCourse: ", error)
