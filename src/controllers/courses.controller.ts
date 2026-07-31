@@ -11,7 +11,7 @@ export const getAllCourses = async (req: Request, res: Response) => {
         if (courses.length === 0) {
             return res
                 .status(404)
-                .json({ mensaje: "No existen cursos para mostrar" });
+                .json({ message: "No existen cursos para mostrar" });
         }
 
         res.status(200).json(courses);
@@ -19,7 +19,7 @@ export const getAllCourses = async (req: Request, res: Response) => {
         console.error(error);
         res
             .status(500)
-            .json({ error: " Error al ejecutar endpoint getAllCourses" });
+            .json({ message: " Error al ejecutar endpoint getAllCourses" });
     }
 };
 
@@ -33,7 +33,7 @@ export const getCourseById = async (req: Request, res: Response) => {
         });
 
         if (!course) {
-            return res.status(404).json({ mensaje: "Materia no existe" });
+            return res.status(404).json({ message: "Materia no existe" });
         }
 
         res.status(200).json(course);
@@ -52,7 +52,7 @@ export const createCourse = async (req: Request, res: Response) => {
         const { name, day, start_time, end_time, modality, difficulty, credits } = req.body
 
         if (!name || !day || !start_time || !end_time || !modality || !difficulty || !credits) {
-            return res.status(400).json({ mensaje: "Todos los campos son obligatorios" });
+            return res.status(400).json({ message: "Todos los campos son obligatorios" });
         }
 
         const newCourse = await prisma.courses.create({
@@ -67,10 +67,10 @@ export const createCourse = async (req: Request, res: Response) => {
             }
         });
 
-        res.status(201).json({ mensaje: "Materia creada con exito." })
+        res.status(201).json({ message: "Materia creada con exito." })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: " Error al ejecutar endpoint createCourse" });
+        res.status(500).json({ message: " Error al ejecutar endpoint createCourse" });
     }
 }
 
@@ -81,7 +81,7 @@ export const updateCourse = async (req: Request, res: Response) => {
         const { name, day, start_time, end_time, modality, difficulty, credits } = req.body
 
         if (!name || !day || !start_time || !end_time || !modality || !difficulty || !credits) {
-            return res.status(400).json({ mensaje: "Todos los campos son obligatorios no deben quedar vacios" });
+            return res.status(400).json({ message: "Todos los campos son obligatorios no deben quedar vacios" });
         }
 
         const course = await prisma.courses.findUnique({
@@ -89,7 +89,7 @@ export const updateCourse = async (req: Request, res: Response) => {
         });
 
         if (!course) {
-            return res.status(404).json({ mensaje: "Materia no existe" });
+            return res.status(404).json({ message: "Materia no existe" });
         }
 
         await prisma.courses.update({
@@ -105,12 +105,12 @@ export const updateCourse = async (req: Request, res: Response) => {
             }
         })
 
-        res.status(200).json({ mensaje: "Modificacion realizada con Exito." });
+        res.status(200).json({ message: "Modificacion realizada con Exito." });
     } catch (error) {
         console.error(error);
         res
             .status(500)
-            .json({ error: " Error al ejecutar endpoint updateCourse" });
+            .json({ message: " Error al ejecutar endpoint updateCourse" });
     }
 };
 
@@ -125,24 +125,24 @@ export const deleteCourse = async (req: Request, res: Response) => {
         });
 
         if (!course) {
-            return res.status(404).json({ mensaje: "Materia no existe" });
+            return res.status(404).json({ message: "Materia no existe" });
         }
 
         await prisma.courses.delete({
             where: { id: Number(id) }
         })
 
-        res.status(200).json({ mensaje: "Materia eliminada con exito" });
+        res.status(200).json({ message: "Materia eliminada con exito" });
     } catch (error:any) {
         if (error.code === "P2003") {
             return res.status(409).json({
-                mensaje: "No se puede eliminar porque tiene registros asociados"
+                message: "No se puede eliminar porque tiene registros asociados"
             });
         }
 
         console.error(error);
         res
             .status(500)
-            .json({ error: " Error al ejecutar endpoint deleteCourse" });
+            .json({ message: " Error al ejecutar endpoint deleteCourse" });
     }
 };
