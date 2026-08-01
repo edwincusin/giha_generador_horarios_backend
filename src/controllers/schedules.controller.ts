@@ -62,7 +62,7 @@ export async function generateSchedules(req: Request, res: Response) {
             totalCombinations,
             validSchedules: validSchedules.length,
             discardedSchedules: discardedSchedules.length,
-            schedules: validSchedules.map(item => ({
+            schedules: [...validSchedules,...discardedSchedules].map(item => ({
                 courses: item.courses.map(c => c.name),
                 totalCredits: item.courses.reduce((sum, c) => sum + c.credits, 0),
                 valid: item.evaluation.valid,
